@@ -264,47 +264,79 @@ function App() {
   }
 
   function runFinder() {
-    const q = finder.toLowerCase().trim();
+  const q = finder.toLowerCase().trim();
 
-    if (!q) {
-      setFinderResults([]);
-      return;
-    }
-
-    const words = q
-      .split(/\s+/)
-      .filter((word) => word.length > 2);
-
-    const ranked = tools
-      .map((tool) => {
-        const searchable = [
-          tool.name,
-          tool.company,
-          tool.cat,
-          tool.desc,
-          ...tool.tags
-        ]
-          .join(" ")
-          .toLowerCase();
-
-        let score = 0;
-
-        words.forEach((word) => {
-          if (searchable.includes(word)) {
-            score += 1;
-          }
-        });
-
-        return { tool, score };
-      })
-      .sort((a, b) => b.score - a.score);
-
-    const useful = ranked.filter((item) => item.score > 0);
-
-    setFinderResults(
-      (useful.length ? useful : ranked).slice(0, 3).map((item) => item.tool)
-    );
+  if (!q) {
+    setFinderResults([]);
+    return;
   }
+
+  const intentMap = [
+    {
+      keywords: ["video", "tiktok", "reels", "youtube", "shorts", "content"],
+      tools: ["runway", "canva", "chatgpt", "elevenlabs"]
+    },
+    {
+      keywords: ["website", "web", "site", "landing", "page"],
+      tools: ["cursor", "chatgpt", "gamma"]
+    },
+    {
+      keywords: ["write", "writing", "copy", "blog", "email", "content"],
+      tools: ["chatgpt", "claude", "gamma"]
+    },
+    {
+      keywords: ["image", "photo", "design", "logo", "visual"],
+      tools: ["midjourney", "canva", "chatgpt"]
+    },
+    {
+      keywords: ["research", "researching", "search", "information", "study"],
+      tools: ["perplexity", "chatgpt", "claude"]
+    },
+    {
+      keywords: ["code", "coding", "program", "software", "app", "developer"],
+      tools: ["cursor", "chatgpt", "claude"]
+    },
+    {
+      keywords: ["voice", "audio", "podcast", "voiceover", "sound"],
+      tools: ["elevenlabs", "chatgpt", "canva"]
+    },
+    {
+      keywords: ["automate", "automation", "workflow", "business", "admin"],
+      tools: ["zapier", "chatgpt", "gamma"]
+    }
+  ];
+
+  const matches = [];
+
+  intentMap.forEach(intent => {
+    if (intent.keywords.some(word => q.includes(word))) {
+      intent.tools.forEach(toolId => {
+        if (!matches.includes(toolId)) {
+          matches.push(toolId);
+        }
+      });
+    }
+  });
+
+  let results;
+
+  if (matches.length > 0) {
+    results = matches
+      .map(id => tools.find(tool => tool.id === id))
+      .filter(Boolean);
+  } else {
+    results = tools
+      .filter(tool =>
+        [tool.name, tool.company, tool.cat, tool.desc, ...tool.tags]
+          .join(" ")
+          .toLowerCase()
+          .includes(q)
+      )
+      .slice(0, 3);
+  }
+
+  setFinderResults(results.slice(0, 4));
+}
 
   function nav(nextPage) {
     setPage(nextPage);
