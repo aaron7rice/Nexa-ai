@@ -262,8 +262,7 @@ function App() {
         : current
     );
   }
-
-  function runFinder() {
+function runFinder() {
   const q = finder.toLowerCase().trim();
 
   if (!q) {
@@ -271,71 +270,75 @@ function App() {
     return;
   }
 
-  const intentMap = [
-    {
-      keywords: ["video", "tiktok", "reels", "youtube", "shorts", "content"],
-      tools: ["runway", "canva", "chatgpt", "elevenlabs"]
-    },
-    {
-      keywords: ["website", "web", "site", "landing", "page"],
-      tools: ["cursor", "chatgpt", "gamma"]
-    },
-    {
-      keywords: ["write", "writing", "copy", "blog", "email", "content"],
-      tools: ["chatgpt", "claude", "gamma"]
-    },
-    {
-      keywords: ["image", "photo", "design", "logo", "visual"],
-      tools: ["midjourney", "canva", "chatgpt"]
-    },
-    {
-      keywords: ["research", "researching", "search", "information", "study"],
-      tools: ["perplexity", "chatgpt", "claude"]
-    },
-    {
-      keywords: ["code", "coding", "program", "software", "app", "developer"],
-      tools: ["cursor", "chatgpt", "claude"]
-    },
-    {
-      keywords: ["voice", "audio", "podcast", "voiceover", "sound"],
-      tools: ["elevenlabs", "chatgpt", "canva"]
-    },
-    {
-      keywords: ["automate", "automation", "workflow", "business", "admin"],
-      tools: ["zapier", "chatgpt", "gamma"]
-    }
-  ];
+  const recommendations = [];
 
-  const matches = [];
-
-  intentMap.forEach(intent => {
-    if (intent.keywords.some(word => q.includes(word))) {
-      intent.tools.forEach(toolId => {
-        if (!matches.includes(toolId)) {
-          matches.push(toolId);
-        }
-      });
-    }
-  });
-
-  let results;
-
-  if (matches.length > 0) {
-    results = matches
-      .map(id => tools.find(tool => tool.id === id))
-      .filter(Boolean);
-  } else {
-    results = tools
-      .filter(tool =>
-        [tool.name, tool.company, tool.cat, tool.desc, ...tool.tags]
-          .join(" ")
-          .toLowerCase()
-          .includes(q)
-      )
-      .slice(0, 3);
+  if (
+    q.includes("tiktok") ||
+    q.includes("video") ||
+    q.includes("reels") ||
+    q.includes("instagram") ||
+    q.includes("social")
+  ) {
+    recommendations.push(
+      tools.find(t => t.id === "runway"),
+      tools.find(t => t.id === "chatgpt"),
+      tools.find(t => t.id === "canva"),
+      tools.find(t => t.id === "elevenlabs")
+    );
   }
 
-  setFinderResults(results.slice(0, 4));
+  if (
+    q.includes("website") ||
+    q.includes("web") ||
+    q.includes("site")
+  ) {
+    recommendations.push(
+      tools.find(t => t.id === "chatgpt"),
+      tools.find(t => t.id === "cursor"),
+      tools.find(t => t.id === "gamma")
+    );
+  }
+
+  if (
+    q.includes("research") ||
+    q.includes("researching") ||
+    q.includes("information") ||
+    q.includes("study")
+  ) {
+    recommendations.push(
+      tools.find(t => t.id === "perplexity"),
+      tools.find(t => t.id === "chatgpt"),
+      tools.find(t => t.id === "claude")
+    );
+  }
+
+  if (
+    q.includes("business") ||
+    q.includes("automate") ||
+    q.includes("automation") ||
+    q.includes("admin")
+  ) {
+    recommendations.push(
+      tools.find(t => t.id === "zapier"),
+      tools.find(t => t.id === "chatgpt"),
+      tools.find(t => t.id === "claude")
+    );
+  }
+
+  if (recommendations.length === 0) {
+    recommendations.push(
+      tools.find(t => t.id === "chatgpt"),
+      tools.find(t => t.id === "claude"),
+      tools.find(t => t.id === "perplexity")
+    );
+  }
+
+  const unique = recommendations.filter(
+    (tool, index, self) =>
+      tool && self.findIndex(t => t.id === tool.id) === index
+  );
+
+  setFinderResults(unique.slice(0, 4));
 }
 
   function nav(nextPage) {
