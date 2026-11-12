@@ -794,8 +794,9 @@ function runFinder() {
     lineHeight: "1.6",
     color: "#aaa"
   }}>
-    These tools were selected based on the outcome you described.
-    Start with the first tool, then use the others to complete the workflow.
+    {finderResults.length > 0
+  ? `For "${finder}", Nexa selected these tools to help you achieve your goal. Start with ${finderResults[0].name}, then use the others to complete the workflow.`
+  : "These tools were selected based on the outcome you described."}
   </div>
 </div>
 
