@@ -270,59 +270,143 @@ function runFinder() {
     return;
   }
 
+  const intentGroups = [
+    {
+      keywords: [
+        "tiktok",
+        "reels",
+        "instagram",
+        "shorts",
+        "youtube",
+        "video",
+        "social",
+        "content"
+      ],
+      tools: ["runway", "canva", "chatgpt", "elevenlabs"]
+    },
+    {
+      keywords: [
+        "website",
+        "web",
+        "site",
+        "landing page",
+        "homepage"
+      ],
+      tools: ["cursor", "chatgpt", "gamma"]
+    },
+    {
+      keywords: [
+        "write",
+        "writing",
+        "copy",
+        "blog",
+        "email",
+        "article",
+        "caption"
+      ],
+      tools: ["chatgpt", "claude", "gamma"]
+    },
+    {
+      keywords: [
+        "image",
+        "photo",
+        "picture",
+        "logo",
+        "visual",
+        "graphic",
+        "poster"
+      ],
+      tools: ["midjourney", "canva", "chatgpt"]
+    },
+    {
+      keywords: [
+        "research",
+        "researching",
+        "study",
+        "information",
+        "find information",
+        "analyse",
+        "analysis"
+      ],
+      tools: ["perplexity", "chatgpt", "claude"]
+    },
+    {
+      keywords: [
+        "code",
+        "coding",
+        "program",
+        "developer",
+        "app",
+        "software",
+        "build an app"
+      ],
+      tools: ["cursor", "chatgpt", "claude"]
+    },
+    {
+      keywords: [
+        "voice",
+        "audio",
+        "podcast",
+        "voiceover",
+        "voice over",
+        "sound"
+      ],
+      tools: ["elevenlabs", "chatgpt", "canva"]
+    },
+    {
+      keywords: [
+        "automate",
+        "automation",
+        "workflow",
+        "admin",
+        "repetitive",
+        "connect apps"
+      ],
+      tools: ["zapier", "chatgpt", "claude"]
+    }
+  ];
+
   const recommendations = [];
 
-  if (
-    q.includes("tiktok") ||
-    q.includes("video") ||
-    q.includes("reels") ||
-    q.includes("instagram") ||
-    q.includes("social")
-  ) {
-    recommendations.push(
-      tools.find(t => t.id === "runway"),
-      tools.find(t => t.id === "chatgpt"),
-      tools.find(t => t.id === "canva"),
-      tools.find(t => t.id === "elevenlabs")
+  intentGroups.forEach(group => {
+    const matched = group.keywords.some(keyword =>
+      q.includes(keyword)
     );
-  }
 
-  if (
-    q.includes("website") ||
-    q.includes("web") ||
-    q.includes("site")
-  ) {
-    recommendations.push(
-      tools.find(t => t.id === "chatgpt"),
-      tools.find(t => t.id === "cursor"),
-      tools.find(t => t.id === "gamma")
-    );
-  }
+    if (matched) {
+      group.tools.forEach(toolId => {
+        const tool = tools.find(t => t.id === toolId);
 
-  if (
-    q.includes("research") ||
-    q.includes("researching") ||
-    q.includes("information") ||
-    q.includes("study")
-  ) {
-    recommendations.push(
-      tools.find(t => t.id === "perplexity"),
-      tools.find(t => t.id === "chatgpt"),
-      tools.find(t => t.id === "claude")
-    );
-  }
+        if (
+          tool &&
+          !recommendations.some(t => t.id === tool.id)
+        ) {
+          recommendations.push(tool);
+        }
+      });
+    }
+  });
 
-  if (
-    q.includes("business") ||
-    q.includes("automate") ||
-    q.includes("automation") ||
-    q.includes("admin")
-  ) {
-    recommendations.push(
-      tools.find(t => t.id === "zapier"),
-      tools.find(t => t.id === "chatgpt"),
-      tools.find(t => t.id === "claude")
-    );
+  if (recommendations.length === 0) {
+    const fallback = tools
+      .filter(tool =>
+        [
+          tool.name,
+          tool.company,
+          tool.cat,
+          tool.desc,
+          ...tool.tags
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(q)
+      );
+
+    fallback.forEach(tool => {
+      if (!recommendations.some(t => t.id === tool.id)) {
+        recommendations.push(tool);
+      }
+    });
   }
 
   if (recommendations.length === 0) {
@@ -333,14 +417,12 @@ function runFinder() {
     );
   }
 
-  const unique = recommendations.filter(
-    (tool, index, self) =>
-      tool && self.findIndex(t => t.id === tool.id) === index
+  setFinderResults(
+    recommendations
+      .filter(Boolean)
+      .slice(0, 4)
   );
-
-  setFinderResults(unique.slice(0, 4));
 }
-
   function nav(nextPage) {
     setPage(nextPage);
     setMenu(false);
