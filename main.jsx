@@ -770,7 +770,34 @@ function runFinder() {
                 {text}
               </button>
             ))}
-          </div>
+          </div> 
+
+          <div style={{
+  marginBottom: "28px",
+  padding: "22px",
+  border: "1px solid rgba(255,255,255,0.1)",
+  borderRadius: "18px",
+  background: "rgba(255,255,255,0.03)"
+}}>
+  <div style={{
+    fontSize: "12px",
+    letterSpacing: "1.5px",
+    color: "#b7ff21",
+    fontWeight: "700",
+    marginBottom: "10px"
+  }}>
+    NEXA RECOMMENDS
+  </div>
+
+  <div style={{
+    fontSize: "16px",
+    lineHeight: "1.6",
+    color: "#aaa"
+  }}>
+    These tools were selected based on the outcome you described.
+    Start with the first tool, then use the others to complete the workflow.
+  </div>
+</div>
 
           {finderResults.length > 0 && (
             <>
