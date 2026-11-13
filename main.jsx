@@ -273,26 +273,31 @@ function runFinder() {
   const intentGroups = [
     {
       keywords: [
+        "video",
         "tiktok",
         "reels",
         "instagram",
-        "shorts",
         "youtube",
-        "video",
-        "social",
-        "content"
+        "shorts",
+        "social media",
+        "content",
+        "edit video",
+        "make videos"
       ],
-      tools: ["runway", "canva", "chatgpt", "elevenlabs"]
+      tools: ["runway", "canva", "elevenlabs", "chatgpt"]
     },
     {
       keywords: [
         "website",
+        "websites",
         "web",
         "site",
         "landing page",
-        "homepage"
+        "homepage",
+        "build a site",
+        "make a website"
       ],
-      tools: ["cursor", "chatgpt", "gamma"]
+      tools: ["cursor", "chatgpt", "gamma", "canva"]
     },
     {
       keywords: [
@@ -302,19 +307,22 @@ function runFinder() {
         "blog",
         "email",
         "article",
-        "caption"
+        "caption",
+        "content writing"
       ],
       tools: ["chatgpt", "claude", "gamma"]
     },
     {
       keywords: [
         "image",
+        "images",
         "photo",
         "picture",
         "logo",
         "visual",
         "graphic",
-        "poster"
+        "poster",
+        "design an image"
       ],
       tools: ["midjourney", "canva", "chatgpt"]
     },
@@ -326,7 +334,8 @@ function runFinder() {
         "information",
         "find information",
         "analyse",
-        "analysis"
+        "analysis",
+        "investigate"
       ],
       tools: ["perplexity", "chatgpt", "claude"]
     },
@@ -338,7 +347,8 @@ function runFinder() {
         "developer",
         "app",
         "software",
-        "build an app"
+        "build an app",
+        "programming"
       ],
       tools: ["cursor", "chatgpt", "claude"]
     },
@@ -349,7 +359,8 @@ function runFinder() {
         "podcast",
         "voiceover",
         "voice over",
-        "sound"
+        "sound",
+        "narration"
       ],
       tools: ["elevenlabs", "chatgpt", "canva"]
     },
@@ -360,26 +371,51 @@ function runFinder() {
         "workflow",
         "admin",
         "repetitive",
-        "connect apps"
+        "connect apps",
+        "save time",
+        "business automation"
       ],
       tools: ["zapier", "chatgpt", "claude"]
+    },
+    {
+      keywords: [
+        "presentation",
+        "slides",
+        "pitch deck",
+        "powerpoint",
+        "deck"
+      ],
+      tools: ["gamma", "canva", "chatgpt"]
+    },
+    {
+      keywords: [
+        "business",
+        "company",
+        "startup",
+        "marketing",
+        "advertising",
+        "sales"
+      ],
+      tools: ["chatgpt", "canva", "perplexity", "zapier"]
     }
   ];
 
   const recommendations = [];
 
-  intentGroups.forEach(group => {
-    const matched = group.keywords.some(keyword =>
+  intentGroups.forEach((group) => {
+    const matched = group.keywords.some((keyword) =>
       q.includes(keyword)
     );
 
     if (matched) {
-      group.tools.forEach(toolId => {
-        const tool = tools.find(t => t.id === toolId);
+      group.tools.forEach((toolId) => {
+        const tool = tools.find((tool) => tool.id === toolId);
 
         if (
           tool &&
-          !recommendations.some(t => t.id === tool.id)
+          !recommendations.some(
+            (existing) => existing.id === tool.id
+          )
         ) {
           recommendations.push(tool);
         }
@@ -387,33 +423,31 @@ function runFinder() {
     }
   });
 
+  // If there was no intent match, search the tool directory.
   if (recommendations.length === 0) {
-    const fallback = tools
-      .filter(tool =>
-        [
-          tool.name,
-          tool.company,
-          tool.cat,
-          tool.desc,
-          ...tool.tags
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(q)
-      );
+    tools.forEach((tool) => {
+      const searchableText = [
+        tool.name,
+        tool.company,
+        tool.cat,
+        tool.desc,
+        ...tool.tags
+      ]
+        .join(" ")
+        .toLowerCase();
 
-    fallback.forEach(tool => {
-      if (!recommendations.some(t => t.id === tool.id)) {
+      if (searchableText.includes(q)) {
         recommendations.push(tool);
       }
     });
   }
 
+  // Always give useful results instead of an empty Finder.
   if (recommendations.length === 0) {
     recommendations.push(
-      tools.find(t => t.id === "chatgpt"),
-      tools.find(t => t.id === "claude"),
-      tools.find(t => t.id === "perplexity")
+      tools.find((tool) => tool.id === "chatgpt"),
+      tools.find((tool) => tool.id === "claude"),
+      tools.find((tool) => tool.id === "perplexity")
     );
   }
 
