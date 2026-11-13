@@ -262,200 +262,65 @@ function App() {
         : current
     );
   }
-function runFinder() {
-  const q = finder.toLowerCase().trim();
+async function runFinder() {
+  const q = finder.trim();
 
   if (!q) {
     setFinderResults([]);
     return;
   }
 
-  const intentGroups = [
-    {
-      keywords: [
-        "video",
-        "tiktok",
-        "reels",
-        "instagram",
-        "youtube",
-        "shorts",
-        "social media",
-        "content",
-        "edit video",
-        "make videos"
-      ],
-      tools: ["runway", "canva", "elevenlabs", "chatgpt"]
-    },
-    {
-      keywords: [
-        "website",
-        "websites",
-        "web",
-        "site",
-        "landing page",
-        "homepage",
-        "build a site",
-        "make a website"
-      ],
-      tools: ["cursor", "chatgpt", "gamma", "canva"]
-    },
-    {
-      keywords: [
-        "write",
-        "writing",
-        "copy",
-        "blog",
-        "email",
-        "article",
-        "caption",
-        "content writing"
-      ],
-      tools: ["chatgpt", "claude", "gamma"]
-    },
-    {
-      keywords: [
-        "image",
-        "images",
-        "photo",
-        "picture",
-        "logo",
-        "visual",
-        "graphic",
-        "poster",
-        "design an image"
-      ],
-      tools: ["midjourney", "canva", "chatgpt"]
-    },
-    {
-      keywords: [
-        "research",
-        "researching",
-        "study",
-        "information",
-        "find information",
-        "analyse",
-        "analysis",
-        "investigate"
-      ],
-      tools: ["perplexity", "chatgpt", "claude"]
-    },
-    {
-      keywords: [
-        "code",
-        "coding",
-        "program",
-        "developer",
-        "app",
-        "software",
-        "build an app",
-        "programming"
-      ],
-      tools: ["cursor", "chatgpt", "claude"]
-    },
-    {
-      keywords: [
-        "voice",
-        "audio",
-        "podcast",
-        "voiceover",
-        "voice over",
-        "sound",
-        "narration"
-      ],
-      tools: ["elevenlabs", "chatgpt", "canva"]
-    },
-    {
-      keywords: [
-        "automate",
-        "automation",
-        "workflow",
-        "admin",
-        "repetitive",
-        "connect apps",
-        "save time",
-        "business automation"
-      ],
-      tools: ["zapier", "chatgpt", "claude"]
-    },
-    {
-      keywords: [
-        "presentation",
-        "slides",
-        "pitch deck",
-        "powerpoint",
-        "deck"
-      ],
-      tools: ["gamma", "canva", "chatgpt"]
-    },
-    {
-      keywords: [
-        "business",
-        "company",
-        "startup",
-        "marketing",
-        "advertising",
-        "sales"
-      ],
-      tools: ["chatgpt", "canva", "perplexity", "zapier"]
-    }
-  ];
-
-  const recommendations = [];
-
-  intentGroups.forEach((group) => {
-    const matched = group.keywords.some((keyword) =>
-      q.includes(keyword)
-    );
-
-    if (matched) {
-      group.tools.forEach((toolId) => {
-        const tool = tools.find((tool) => tool.id === toolId);
-
-        if (
-          tool &&
-          !recommendations.some(
-            (existing) => existing.id === tool.id
-          )
-        ) {
-          recommendations.push(tool);
-        }
-      });
-    }
-  });
-
-  // If there was no intent match, search the tool directory.
-  if (recommendations.length === 0) {
-    tools.forEach((tool) => {
-      const searchableText = [
-        tool.name,
-        tool.company,
-        tool.cat,
-        tool.desc,
-        ...tool.tags
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      if (searchableText.includes(q)) {
-        recommendations.push(tool);
-      }
+  try {
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: q
+      })
     });
-  }
 
-  // Always give useful results instead of an empty Finder.
-  if (recommendations.length === 0) {
-    recommendations.push(
-      tools.find((tool) => tool.id === "chatgpt"),
-      tools.find((tool) => tool.id === "claude"),
-      tools.find((tool) => tool.id === "perplexity")
-    );
-  }
+    const data = await response.json();
 
-  setFinderResults(
-    recommendations
-      .filter(Boolean)
-      .slice(0, 4)
-  );
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Nexa AI request failed"
+      );
+    }
+
+    setFinderResults([
+      {
+        id: "nexa-response",
+        name: "Nexa AI",
+        company: "Nexa AI",
+        cat: "AI",
+        icon: "✦",
+        desc: data.reply || "Nexa couldn't generate a response.",
+        price: "Nexa AI",
+        rating: 5,
+        tags: ["AI", "Recommendation"],
+        url: "#"
+      }
+    ]);
+  } catch (error) {
+    console.error("Nexa AI error:", error);
+
+    setFinderResults([
+      {
+        id: "nexa-error",
+        name: "Nexa AI",
+        company: "Nexa AI",
+        cat: "AI",
+        icon: "✦",
+        desc: "Nexa couldn't connect to its AI brain. Please try again.",
+        price: "Error",
+        rating: 0,
+        tags: ["Nexa"],
+        url: "#"
+      }
+    ]);
+  }
 }
   function nav(nextPage) {
     setPage(nextPage);
